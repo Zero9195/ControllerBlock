@@ -54,7 +54,7 @@ public class ControllerBlock extends JavaPlugin
   public void onLoad()
   {
     if (!this.beenLoaded) {
-      this.log.info(getDescription().getVersion() + " by Zero9195 (Original by Hell_Fire)");
+      this.log.info(getDescription().getVersion() + " by Zero9195 (Original by Hell_Fire). Updated for R6 by Sorklin");
       checkPluginDataDir();
       loadConfig();
 
