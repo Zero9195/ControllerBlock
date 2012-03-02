@@ -1,33 +1,18 @@
 package net.servfire.hellfire.bukkit.ControllerBlock;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class ControllerBlock extends JavaPlugin
   implements Runnable
@@ -39,6 +24,7 @@ public class ControllerBlock extends JavaPlugin
   private Config config = new Config();
   private PermissionHandler permissionHandler = new PermissionHandler(this);
   private final CBlockListener blockListener = new CBlockListener(this);
+  private final CRedstoneListener redstoneListener = new CRedstoneListener(this);
   private final CPlayerListener playerListener = new CPlayerListener(this);
   private final CBlockRedstoneCheck checkRunner = new CBlockRedstoneCheck(this);
 
@@ -58,10 +44,13 @@ public class ControllerBlock extends JavaPlugin
   private List<Material> DisallowedTypesAll = new ArrayList();
   private List<Material> UnprotectedBlocks = new ArrayList();
 
+  @Override
   public void onDisable()
   {
+      getServer().getScheduler().cancelTasks(this);
   }
 
+  @Override
   public void onLoad()
   {
     if (!this.beenLoaded) {
@@ -73,6 +62,7 @@ public class ControllerBlock extends JavaPlugin
     }
   }
 
+  @Override
   public void onEnable()
   {
     if (!this.beenEnabled) {
@@ -81,26 +71,24 @@ public class ControllerBlock extends JavaPlugin
       this.log.debug("Registering events:");
 
       this.log.debug(" - BLOCK_DAMAGE");
-      pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Event.Priority.Highest, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_DAMAGE, this.blockListener, Event.Priority.Highest, this);
       this.log.debug(" - BLOCK_BREAK");
-      pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Highest, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_BREAK, this.blockListener, Event.Priority.Highest, this);
       this.log.debug(" - BLOCK_PLACE");
-      pm.registerEvent(Event.Type.BLOCK_PLACE, this.blockListener, Event.Priority.Monitor, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_PLACE, this.blockListener, Event.Priority.Monitor, this);
       this.log.debug(" - BLOCK_PHYSICS");
-      pm.registerEvent(Event.Type.BLOCK_PHYSICS, this.blockListener, Event.Priority.Monitor, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_PHYSICS, this.blockListener, Event.Priority.Monitor, this);
       this.log.debug(" - BLOCK_FROMTO");
-      pm.registerEvent(Event.Type.BLOCK_FROMTO, this.blockListener, Event.Priority.Monitor, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_FROMTO, this.blockListener, Event.Priority.Monitor, this);
       this.log.debug(" - BLOCK_PISTON");
-      pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND, this.blockListener, Event.Priority.Monitor, this);
-      pm.registerEvent(Event.Type.BLOCK_PISTON_RETRACT, this.blockListener, Event.Priority.Monitor, this);
-
+      //pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND, this.blockListener, Event.Priority.Monitor, this);
+      //pm.registerEvent(Event.Type.BLOCK_PISTON_RETRACT, this.blockListener, Event.Priority.Monitor, this);
+      getServer().getPluginManager().registerEvents(blockListener, this);
+      
+      
       this.log.debug(" - PLAYER_INTERACT");
-      pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Event.Priority.Highest, this);
+      //pm.registerEvent(Event.Type.PLAYER_INTERACT, this.playerListener, Event.Priority.Highest, this);
+      getServer().getPluginManager().registerEvents(playerListener, this);
 
       this.log.debug("Scheduling tasks:");
 
@@ -124,7 +112,9 @@ public class ControllerBlock extends JavaPlugin
 
       if (this.config.getBool(Config.Option.QuickRedstoneCheck)) {
         this.log.info("Enabling 'quick' redstone check - this mode of operation is depreciated and may be removed later");
-        pm.registerEvent(Event.Type.REDSTONE_CHANGE, this.blockListener, Event.Priority.Monitor, this);
+        // Redstone listener class
+        //pm.registerEvent(Event.Type.REDSTONE_CHANGE, this.blockListener, Event.Priority.Monitor, this);
+        getServer().getPluginManager().registerEvents(redstoneListener, this);
       }
 
       if (getServer().getScheduler().scheduleSyncDelayedTask(this, this, 1L) == -1) {
@@ -138,6 +128,7 @@ public class ControllerBlock extends JavaPlugin
     }
   }
 
+  @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
   {
     if ((sender instanceof Player))
@@ -413,7 +404,6 @@ public class ControllerBlock extends JavaPlugin
       String s;
       while ((s = in.readLine()) != null)
       {
-        String s;
         configText.add(s.trim());
         l = Integer.valueOf(l.intValue() + 1);
         if ((s.trim().isEmpty()) || 

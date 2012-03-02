@@ -1,17 +1,16 @@
 package net.servfire.hellfire.bukkit.ControllerBlock;
 
-import java.util.HashMap;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
-import org.bukkit.inventory.ItemStack;
 
-public class CPlayerListener extends PlayerListener
+public class CPlayerListener implements Listener
 {
   ControllerBlock parent;
 
@@ -27,6 +26,7 @@ public class CPlayerListener extends PlayerListener
       (t.equals(Material.REDSTONE_TORCH_OFF));
   }
 
+  @EventHandler(priority= EventPriority.HIGHEST)
   public void onPlayerInteract(PlayerInteractEvent e)
   {
     Player player = e.getPlayer();

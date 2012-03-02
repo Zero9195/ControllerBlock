@@ -1,7 +1,6 @@
 package net.servfire.hellfire.bukkit.ControllerBlock;
 
 import java.util.Iterator;
-import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;

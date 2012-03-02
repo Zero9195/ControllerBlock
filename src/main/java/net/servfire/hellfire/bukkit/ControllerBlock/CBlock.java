@@ -60,7 +60,7 @@ public class CBlock
     if (b.getType().equals(this.blockType)) {
       Location bloc = b.getLocation();
 
-      if (this.placedBlocks.size() == 0) {
+      if (this.placedBlocks.isEmpty()) {
         this.placedBlocks.add(new BlockDesc(bloc, Byte.valueOf(b.getData())));
         return true;
       }
@@ -256,7 +256,6 @@ public class CBlock
     }
 
     this.blockType = Material.getMaterial(args[4]);
-    int i;
     int i;
     if (version >= 3) {
       this.owner = args[5];

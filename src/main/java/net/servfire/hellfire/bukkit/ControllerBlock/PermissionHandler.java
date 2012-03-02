@@ -4,10 +4,8 @@ import com.nijikokun.bukkit.Permissions.Permissions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 
 public class PermissionHandler
 {

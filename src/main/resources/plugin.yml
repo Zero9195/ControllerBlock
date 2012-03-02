@@ -1,6 +1,6 @@
 name: ControllerBlock
 main: net.servfire.hellfire.bukkit.ControllerBlock.ControllerBlock
-version: 1.52
+version: 1.60
 commands:
     cblock:
         description: Reload the config.

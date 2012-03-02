@@ -1,32 +1,20 @@
 package net.servfire.hellfire.bukkit.ControllerBlock;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockListener;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.*;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.material.MaterialData;
 
-public class CBlockListener extends BlockListener
-  implements Runnable
+public class CBlockListener implements Runnable, Listener
 {
   private ControllerBlock parent;
 
@@ -48,7 +36,6 @@ public class CBlockListener extends BlockListener
     Player p;
     while ((p = getPlayerEditing(c)) != null)
     {
-      Player p;
       this.parent.map.remove(p);
     }
   }
@@ -61,6 +48,7 @@ public class CBlockListener extends BlockListener
       (t.equals(Material.REDSTONE_TORCH_OFF));
   }
 
+  @EventHandler(priority= EventPriority.HIGHEST)
   public void onBlockBreak(BlockBreakEvent e)
   {
     if (e.isCancelled()) return;
@@ -68,7 +56,9 @@ public class CBlockListener extends BlockListener
     Block b = e.getBlock();
     PlayerInventory inv = player.getInventory();
     Material item = inv.getItemInHand().getType();
-
+    byte cBType;
+    String cBTypeStr;
+    
     if ((player.getGameMode().equals(GameMode.CREATIVE)) && (item.isBlock()))
     {
       CBlock conBlock = (CBlock)this.parent.map.get(player);
@@ -104,31 +94,28 @@ public class CBlockListener extends BlockListener
         conBlock = this.parent.getCBlock(b.getLocation());
         if (conBlock == null) {
           if (!isRedstone(b.getRelative(BlockFace.UP))) return;
-          byte cBType;
           if (b.getType() == this.parent.getCBlockType()) {
-            String cBTypeStr = "protected";
+            cBTypeStr = "protected";
             cBType = 0;
           }
           else
           {
-            byte cBType;
+            //byte cBType;
             if (b.getType() == this.parent.getSemiProtectedCBlockType()) {
-              String cBTypeStr = "semi-protected";
+              cBTypeStr = "semi-protected";
               cBType = 1;
             }
             else
             {
-              byte cBType;
+              //byte cBType;
               if (b.getType() == this.parent.getUnProtectedCBlockType()) {
-                String cBTypeStr = "unprotected";
+                cBTypeStr = "unprotected";
                 cBType = 2;
               } else {
                 return;
               }
             }
           }
-          byte cBType;
-          String cBTypeStr;
           if (!this.parent.getPerm().canCreate(player)) {
             player.sendMessage("You're not allowed to create " + cBTypeStr + " ControllerBlocks");
             e.setCancelled(true);
@@ -207,23 +194,25 @@ public class CBlockListener extends BlockListener
       if (conBlock.delBlock(b)) player.sendMessage("Block removed from controller " + Util.formatBlockCount(conBlock)); 
     }
     else if ((conBlock = this.parent.getControllerBlockFor(null, b.getLocation(), b.getType(), null)) != null)
-      switch ($SWITCH_TABLE$net$servfire$hellfire$bukkit$ControllerBlock$BlockProtectMode()[((BlockProtectMode)this.parent.getConfigu().getOpt(Config.Option.BlockProtectMode)).ordinal()]) {
-      case 1:
+      switch ((BlockProtectMode)this.parent.getConfigu().getOpt(Config.Option.BlockProtectMode)) {
+      case protect:
         if ((conBlock.protectedLevel != 0) && ((conBlock.isOn()) || (conBlock.protectedLevel == 2))) break;
         player.sendMessage("This block is controlled by a controller block at " + 
           conBlock.getLoc().getBlockX() + ", " + 
           conBlock.getLoc().getBlockY() + ", " + 
           conBlock.getLoc().getBlockZ());
         e.setCancelled(true);
-
         break;
-      case 2:
+          
+      case remove:
         conBlock.delBlock(b);
         break;
-      case 3:
+          
+      case none:
       }
   }
 
+  @EventHandler(priority= EventPriority.HIGHEST)
   public void onBlockDamage(BlockDamageEvent e)
   {
     Player player = e.getPlayer();
@@ -241,7 +230,9 @@ public class CBlockListener extends BlockListener
     Material item = inv.getItemInHand().getType();
     Block b = e.getBlock();
     CBlock conBlock = (CBlock)this.parent.map.get(player);
-
+    byte cBType;
+    String cBTypeStr;
+    
     if ((item.equals(Material.WOOD_PICKAXE)) || 
       (item.equals(Material.STONE_PICKAXE)) || 
       (item.equals(Material.IRON_PICKAXE)) || 
@@ -271,31 +262,28 @@ public class CBlockListener extends BlockListener
       conBlock = this.parent.getCBlock(b.getLocation());
       if (conBlock == null) {
         if (!isRedstone(b.getRelative(BlockFace.UP))) return;
-        byte cBType;
+        
         if (b.getType() == this.parent.getCBlockType()) {
-          String cBTypeStr = "protected";
+          cBTypeStr = "protected";
           cBType = 0;
         }
         else
         {
-          byte cBType;
           if (b.getType() == this.parent.getSemiProtectedCBlockType()) {
-            String cBTypeStr = "semi-protected";
+            cBTypeStr = "semi-protected";
             cBType = 1;
           }
           else
           {
-            byte cBType;
             if (b.getType() == this.parent.getUnProtectedCBlockType()) {
-              String cBTypeStr = "unprotected";
+              cBTypeStr = "unprotected";
               cBType = 2;
             } else {
               return;
             }
           }
         }
-        byte cBType;
-        String cBTypeStr;
+
         if (!this.parent.getPerm().canCreate(player)) {
           player.sendMessage("You're not allowed to create " + cBTypeStr + " ControllerBlocks");
           return;
@@ -346,9 +334,11 @@ public class CBlockListener extends BlockListener
     }
   }
 
+  
+  @EventHandler(priority= EventPriority.MONITOR, ignoreCancelled=true)
   public void onBlockPlace(BlockPlaceEvent e)
   {
-    if ((e.isCancelled()) || (!e.canBuild())) return;
+    if (!e.canBuild()) return;
     Player player = e.getPlayer();
     CBlock conBlock = (CBlock)this.parent.map.get(player);
     if (conBlock == null) return;
@@ -376,24 +366,9 @@ public class CBlockListener extends BlockListener
     }
   }
 
-  public void onBlockRedstoneChange(BlockRedstoneEvent e) {
-    CBlock conBlock = null;
-    if (this.parent.getConfigu().getBool(Config.Option.QuickRedstoneCheck)) {
-      conBlock = this.parent.getCBlock(e.getBlock().getRelative(BlockFace.DOWN).getLocation());
-    }
-    if (conBlock == null) return;
-
-    BlockState s = e.getBlock().getState();
-    if (s.getType().equals(Material.REDSTONE_WIRE)) {
-      MaterialData m = s.getData();
-      m.setData((byte)e.getNewCurrent());
-      s.setData(m);
-    }
-    conBlock.doRedstoneCheck(s);
-  }
-
+  @EventHandler(priority= EventPriority.MONITOR, ignoreCancelled=true)
   public void onBlockPhysics(BlockPhysicsEvent e) {
-    if (e.isCancelled()) return;
+
     CBlock conBlock = this.parent.getControllerBlockFor(null, e.getBlock().getLocation(), null, Boolean.valueOf(true));
     if (conBlock == null)
     {
@@ -422,9 +397,9 @@ public class CBlockListener extends BlockListener
     }
   }
 
+  @EventHandler(priority= EventPriority.MONITOR, ignoreCancelled=true)
   public void onBlockFromTo(BlockFromToEvent e)
   {
-    if (e.isCancelled()) return;
     CBlock conBlock = this.parent.getControllerBlockFor(null, e.getToBlock().getLocation(), null, Boolean.valueOf(true));
     if (conBlock == null) return;
     if (conBlock.isBeingEdited())
@@ -443,12 +418,9 @@ public class CBlockListener extends BlockListener
     }
   }
 
+  @EventHandler(priority= EventPriority.MONITOR, ignoreCancelled=true)
   public void onBlockPistonExtend(BlockPistonExtendEvent event)
   {
-    if (event.isCancelled())
-    {
-      return;
-    }
 
     if (((Boolean)this.parent.getConfigu().getOpt(Config.Option.PistonProtection)).booleanValue())
     {
@@ -470,13 +442,9 @@ public class CBlockListener extends BlockListener
     }
   }
 
+  @EventHandler(priority= EventPriority.MONITOR, ignoreCancelled=true)
   public void onBlockPistonRetract(BlockPistonRetractEvent event)
   {
-    if (event.isCancelled())
-    {
-      return;
-    }
-
     if (((Boolean)this.parent.getConfigu().getOpt(Config.Option.PistonProtection)).booleanValue())
     {
       Block b = event.getBlock();
